@@ -1,5 +1,9 @@
 pragma ton-solidity >=0.59.5;
 
+// Test addresses
+// 0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415
+// 0:b5e9240fc2d2f1ff8cbb1d1dee7fb7cae155e5f6320e585fcc685698994a19a5
+
 contract VestingDistribution {
 	// Error codes
 	uint256 constant ERROR_SENDER_IS_NOT_OWNER = 101;
@@ -35,8 +39,15 @@ contract VestingDistribution {
 		_;
 	}
 
-    function stopVesting() public  onlyOwner {
-        
+    function stopVesting(address user) public onlyOwner {
+        calculateVesting();
+        address[] newUsers;
+        for (uint i = 0; i < m_users.length; i++) {
+            if (m_users[i] != user) {
+                newUsers.push(m_users[i]);
+            }
+        }
+        m_users = newUsers;
     }
 
     function distributeVesting(uint128 vesting) private {
@@ -58,6 +69,10 @@ contract VestingDistribution {
         uint128 vestingPerSecond = maxAlloc / m_period;
         uint128 currentVesting = (now - m_lastVestingTimestamp) * vestingPerSecond;
         distributeVesting(currentVesting);
+    }
+
+    function getCurrentAmount() public view returns (uint128) {
+        return m_vestingAmount;
     }
 
     /*function getCurrentVestingInfo() public {
