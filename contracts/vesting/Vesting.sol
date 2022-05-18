@@ -26,8 +26,7 @@ contract VestingDistribution {
         m_distributionType      = distributionType;
         m_users                 = users;
         m_period                = period;
-        m_timestamp             = now;
-        calculateVesting();
+        m_lastVestingTimestamp  = now;
 	}
 
 	modifier onlyOwner() {
@@ -48,15 +47,15 @@ contract VestingDistribution {
         m_lastVestingTimestamp = now;
     }
 
-    function calculateVesting() private {
+    function calculateVesting() public {
         if (m_distributionType == DISTRIBUTION_TYPE_EQUAL) {
             calculateVestingEqual();
         }
     }
 
-    function calculateVestingEqual() private {
+    function calculateVestingEqual() public onlyOwner {
         uint128 maxAlloc = m_vestingAmount / uint128(m_users.length);
-        uint128 vestingPerSecond = maxAlloc / (m_period * 1000);
+        uint128 vestingPerSecond = maxAlloc / m_period;
         uint128 currentVesting = (now - m_lastVestingTimestamp) * vestingPerSecond;
         distributeVesting(currentVesting);
     }
